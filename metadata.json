@@ -1,0 +1,5 @@
+{
+  "name": "AI Resume Analyzer",
+  "description": "An AI-powered tool that compares a candidate's resume against a job description to provide a detailed fit-score analysis, actionable feedback, and resume rewrite suggestions. This app acts as a frontend for a sophisticated JD Match Engine, helping hiring managers and candidates optimize their recruitment process.",
+  "requestFramePermissions": []
+}

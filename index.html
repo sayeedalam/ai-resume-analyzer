@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://letsapplai.com/">
+  <meta charset="UTF-8">
+  <title>LetsApplAi | AI Resume–JD Analyzer & Fit Score Engine – Know Before You Apply</title>
+  <meta name="description" content="Compare your resume with any job description in seconds. Get your AI-powered Fit Score, recruiter-style feedback, and actionable rewrites — all from LetsApplAi.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Apply brand colors
+            'navy': '#0f172a',
+            'bright-blue': '#1E90FF',
+            'accent-blue': '#4FC3F7',
+            'warm-orange': '#F59E0B',
+            'light-gray': '#F3F4F6',
+            'charcoal': '#374151'
+          },
+          fontFamily: {
+            'inter': ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Global Styles from seeker_head.php */
+    body {
+      background-color: #0f172a; /* dark navy */
+      padding-top: 3rem; 
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+    }
+    main#root {
+      background-color: #0f172a !important; /* ensure same color as analyzer section */
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+    #root {
+      padding-top: 3rem; /* adjust if header is taller/shorter */
+    }
+    /* Match "Analyze Fit" button color to LetsApplAi theme */
+    button, .analyze-fit-btn {
+      background-color: #F59E0B !important; /* bright-orange */
+      color: #ffffff !important;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    button:hover, .analyze-fit-btn:hover {
+      background-color: #d97706 !important; /* dark orange */
+    }
+  </style>
+</head>
+<body class="font-inter bg-navy min-h-screen">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
