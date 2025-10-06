@@ -1,0 +1,15 @@
+// ai-resume-analyzer/vercel.json (NEW FILE)
+{
+    "functions": {
+      "api/analyze.ts": {
+        "runtime": "node18.x",
+        "memory": 1024,
+        "maxDuration": 60
+      }
+    },
+    "build": {
+      "env": {
+        "GEMINI_API_KEY": "@gemini_api_key"
+      }
+    }
+  }
