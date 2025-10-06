@@ -1,13 +1,11 @@
-// ai-resume-analyzer/api/analyze.ts (NEW SECURE FILE FOR VERCEL)
+// ai-resume-analyzer/api/analyze.ts (FINAL WORKING CODE WITH CORS FIX)
 
 import { GoogleGenAI } from "@google/genai";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // --- 1. CONFIGURATION ---
-// The Gemini API key will be read securely from Vercel's environment variables
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// The Failsafe Response (Guarantees Frontend doesn't crash)
 const fullFailsafe = {
     overall_score: 0,
     component_scores: { skills: 0, experience: 0, achievements: 0, seniority: 0, ats_format: 0, soft_fit: 0, location_salary_visa: 0 },
@@ -27,7 +25,6 @@ const fullFailsafe = {
 // --- 2. PROMPT & SCHEMA ---
 const systemPrompt = "You are an expert resume analyzer and career coach. Your task is to evaluate a candidate's resume against a specific job description. Your evaluation must be based strictly on the content provided in the resume and the job description. Do not make assumptions or use external knowledge.";
 
-// Schema matches the frontend's AnalysisResult interface
 const responseSchema = {
     type: "object",
     properties: { 
@@ -47,11 +44,24 @@ const responseSchema = {
 
 // --- 3. VERCEL HANDLER ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    
+    // 🚨 CORS FIX: Allow access from your Hostinger domain
+    res.setHeader('Access-Control-Allow-Origin', 'https://letsapplai.com');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+        res.status(204).end();
+        return;
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
 
     try {
+        // The rest of your logic remains the same
         const { jobDescription, resumeText } = req.body;
 
         if (!jobDescription || !resumeText) {
@@ -81,7 +91,6 @@ Instructions: 1. Provide a detailed, structured JSON response based on the attac
         const cleanResponse = finalJsonText.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
         let finalResult = JSON.parse(cleanResponse);
 
-        // Guarantee all arrays are present (Failsafe for Model Output)
         finalResult = { ...fullFailsafe, ...finalResult };
         finalResult.component_scores = { ...fullFailsafe.component_scores, ...finalResult.component_scores };
         finalResult.raw_matches = { ...fullFailsafe.raw_matches, ...finalResult.raw_matches };
@@ -90,7 +99,6 @@ Instructions: 1. Provide a detailed, structured JSON response based on the attac
 
     } catch (error) {
         console.error("Vercel API Error:", error);
-        // Return a failsafe structure to the frontend to prevent a crash
         res.status(200).json(fullFailsafe);
     }
 }
