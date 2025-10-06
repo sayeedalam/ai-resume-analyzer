@@ -1,24 +1,18 @@
-// ai-resume-analyzer/api/analyze.ts (FINAL WORKING CODE WITH CORS FIX)
+// ai-resume-analyzer/api/analyze.ts (FINAL WORKING CODE FOR VERCEL)
 
 import { GoogleGenAI } from "@google/genai";
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from '@vercel/node'; // Retain type imports for local development, Vercel handles the runtime import
 
 // --- 1. CONFIGURATION ---
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// The Gemini API key will be read securely from process.env.GEMINI_API_KEY
+const ai = new GoogleGenAI({}); 
 
 const fullFailsafe = {
-    overall_score: 0,
-    component_scores: { skills: 0, experience: 0, achievements: 0, seniority: 0, ats_format: 0, soft_fit: 0, location_salary_visa: 0 },
-    verdict: 'Error',
-    confidence: 0,
-    top_reasons: ['Service temporarily unavailable.'],
-    strengths: ['ERROR: Service failed to respond.'],
-    weaknesses: ['Please check Vercel logs or try again later.'],
-    missing_must_have_skills: [],
-    suggested_resume_bullets: [],
-    suggested_cover_letter_opening: 'Error: Failed to generate cover letter opening.',
-    apply_if_changes: [],
-    raw_matches: { jd_must_have_skills: [], jd_nice_to_have: [], resume_skills_found: [] },
+    overall_score: 0, component_scores: { skills: 0, experience: 0, achievements: 0, seniority: 0, ats_format: 0, soft_fit: 0, location_salary_visa: 0 },
+    verdict: 'Error', confidence: 0, top_reasons: ['Service temporarily unavailable.'],
+    strengths: ['ERROR: Service failed to respond.'], weaknesses: ['Please check Vercel logs or try again later.'],
+    missing_must_have_skills: [], suggested_resume_bullets: [], suggested_cover_letter_opening: 'Error: Failed to generate cover letter opening.',
+    apply_if_changes: [], raw_matches: { jd_must_have_skills: [], jd_nice_to_have: [], resume_skills_found: [] },
     notes: 'Analysis failed due to a server error or AI issue.'
 };
 
@@ -50,7 +44,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Handle preflight request
     if (req.method === 'OPTIONS') {
         res.status(204).end();
         return;
@@ -61,7 +54,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        // The rest of your logic remains the same
         const { jobDescription, resumeText } = req.body;
 
         if (!jobDescription || !resumeText) {
@@ -78,12 +70,12 @@ Instructions: 1. Provide a detailed, structured JSON response based on the attac
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-            config: {
-                generationConfig: {
-                    temperature: 0.0,
-                    responseMimeType: "application/json",
-                    responseSchema: responseSchema,
-                }
+            // 🚨 FIX: Pass configuration options directly under 'config' using the SDK's structure
+            config: { 
+                temperature: 0.0,
+                responseMimeType: "application/json",
+                responseSchema: responseSchema,
+                systemInstruction: systemPrompt // Use the correct field name here
             }
         });
 
