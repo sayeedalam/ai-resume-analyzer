@@ -1,11 +1,11 @@
 // ai-resume-analyzer/api/analyze.ts (FINAL WORKING CODE FOR VERCEL)
 
 import { GoogleGenAI } from "@google/genai";
-import type { VercelRequest, VercelResponse } from '@vercel/node'; // Retain type imports for local development, Vercel handles the runtime import
+import type { VercelRequest, VercelResponse } from '@vercel/node'; 
 
 // --- 1. CONFIGURATION ---
-// The Gemini API key will be read securely from process.env.GEMINI_API_KEY
-const ai = new GoogleGenAI({}); 
+// 🚨 FIX: Pass the API key explicitly from the environment variables.
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const fullFailsafe = {
     overall_score: 0, component_scores: { skills: 0, experience: 0, achievements: 0, seniority: 0, ats_format: 0, soft_fit: 0, location_salary_visa: 0 },
@@ -39,7 +39,7 @@ const responseSchema = {
 // --- 3. VERCEL HANDLER ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     
-    // 🚨 CORS FIX: Allow access from your Hostinger domain
+    // 🚨 CORS FIX:
     res.setHeader('Access-Control-Allow-Origin', 'https://letsapplai.com');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -54,6 +54,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("CRITICAL: GEMINI_API_KEY environment variable is missing on Vercel.");
+            throw new Error("API_KEY_MISSING_FATAL");
+        }
+
         const { jobDescription, resumeText } = req.body;
 
         if (!jobDescription || !resumeText) {
@@ -70,12 +75,11 @@ Instructions: 1. Provide a detailed, structured JSON response based on the attac
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-            // 🚨 FIX: Pass configuration options directly under 'config' using the SDK's structure
             config: { 
                 temperature: 0.0,
                 responseMimeType: "application/json",
                 responseSchema: responseSchema,
-                systemInstruction: systemPrompt // Use the correct field name here
+                systemInstruction: systemPrompt
             }
         });
 
@@ -91,6 +95,16 @@ Instructions: 1. Provide a detailed, structured JSON response based on the attac
 
     } catch (error) {
         console.error("Vercel API Error:", error);
+        // If the API key is missing, return a specific error message
+        if (error.message === "API_KEY_MISSING_FATAL") {
+             const keyErrorFailsafe = {
+                 ...fullFailsafe,
+                 strengths: ['CRITICAL ERROR: API Key Missing/Invalid.'],
+                 weaknesses: ['Vercel environment variable GEMINI_API_KEY is not configured or loading.'],
+                 notes: 'Check Vercel Dashboard Settings.'
+             };
+             return res.status(200).json(keyErrorFailsafe);
+        }
         res.status(200).json(fullFailsafe);
     }
 }
