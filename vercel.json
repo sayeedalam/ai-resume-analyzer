@@ -1,4 +1,4 @@
-// ai-resume-analyzer/vercel.json (NEW FILE)
+// ai-resume-analyzer/vercel.json (FINAL CLEAN JSON)
 {
     "functions": {
       "api/analyze.ts": {
